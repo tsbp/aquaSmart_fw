@@ -112,11 +112,11 @@ static void ICACHE_FLASH_ATTR service_timer_cb(os_event_t *events) {
 					{
 						os_printf("do reset \r\n");
 
-						os_memset(configs.hwSettings.wifi.SSID, 0,sizeof(configs.hwSettings.wifi.SSID));
-						os_sprintf(configs.hwSettings.wifi.SSID, "%s", "TERMO_WIFI");
+						os_memset(configs.wifi.SSID, 0,sizeof(configs.wifi.SSID));
+						os_sprintf(configs.wifi.SSID, "%s", "TERMO_WIFI");
 
-						configs.hwSettings.wifi.mode = SOFTAP_MODE;
-						configs.hwSettings.wifi.auth = AUTH_OPEN;
+						configs.wifi.mode = SOFTAP_MODE;
+						configs.wifi.auth = AUTH_OPEN;
 						saveConfigs();
 						system_restart();					
 					}

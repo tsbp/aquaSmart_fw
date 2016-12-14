@@ -39,7 +39,7 @@ void ICACHE_FLASH_ATTR loop(os_event_t *events)
 //	signed int a = (tData[0][3] - '0') + (tData[0][2] - '0') * 10	+ (tData[0][1] - '0') * 100;
 //	uint16 t = getSetTemperature();
 //	gpio_write(1, cmpTemperature (t, a));
-	if(!timeTrue && configs.hwSettings.wifi.mode == STATION_MODE) timeTrue = timeSync();
+	if(!timeTrue && configs.wifi.mode == STATION_MODE) timeTrue = timeSync();
 	timeIncrement();
 
 //	ets_uart_printf("%d:%d:%d\r\n", time.hour, time.min, time.sec);
@@ -73,7 +73,7 @@ void ICACHE_FLASH_ATTR user_init(void)
 
 	//saveConfigs();
 	readConfigs();
-	sntp_initialize();
+	if(configs.wifi.mode == STATION_MODE) sntp_initialize();
 
 	wifi_station_disconnect();
 	wifi_station_set_auto_connect(0);

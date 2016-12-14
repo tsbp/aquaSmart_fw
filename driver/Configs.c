@@ -51,19 +51,10 @@ uint8 timeSync(void)
 }
 //=============================================================================
 u_CONFIG configs = {
-		.cfg[0].periodsCnt = 1,
-		.cfg[0].pConfig[0].hStart = 0,
-		.cfg[0].pConfig[0].mStart = 0,
-		.cfg[0].pConfig[0].temperature = 250,
-
-		.cfg[1].periodsCnt = 1,
-		.cfg[1].pConfig[0].hStart = 0,
-		.cfg[1].pConfig[0].mStart = 0,
-		.cfg[1].pConfig[0].temperature = 230,
-
-	    .hwSettings.wifi.mode = STATION_MODE,
-		.hwSettings.wifi.SSID = "voodoo",
-        .hwSettings.wifi.SSID_PASS = "eminem82"};
+	    .wifi.mode = STATION_MODE,
+		.wifi.SSID = "voodoo",
+        .wifi.SSID_PASS = "eminem82"
+};
 //=============================================================================
 void ICACHE_FLASH_ATTR saveConfigs(void) {
     flashWriteBit = 0;

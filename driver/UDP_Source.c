@@ -13,7 +13,7 @@
 #include "driver/services.h"
 #include "driver/configs.h"
 //=========================================================================================
-extern u_CONFIG configs;
+//extern u_CONFIG configs;
 struct espconn *UDP_PC;
 
 
@@ -64,7 +64,7 @@ uint8 crcCalc(uint8 *aBuf, uint8 aLng)
 //=========================================================================================
 void UDP_Recieved(void *arg, char *pusrdata, unsigned short length)
 {
-	int a;
+	int a, i;
 	ets_uart_printf("recv udp data: ");
 	for (a = 0; a < length; a++)
 		ets_uart_printf("%02x ", pusrdata[a]);
@@ -90,25 +90,65 @@ void UDP_Recieved(void *arg, char *pusrdata, unsigned short length)
 		switch(pusrdata[1])
 		{
 			case CMD_GET_STATE:
-			{
-				uint8 cBuf[8];
-				cBuf[0] = (uint8)(sizeof(cBuf) - 1);
-				cBuf[1] = (uint8)(CMD_GET_STATE_ANS);
-				cBuf[2] = time.hour;
-				cBuf[3] = time.min;
-				cBuf[4] = time.sec;
-				cBuf[5] = (uint8)(currentTemperature[0] & 0xff);
-				cBuf[6] = (uint8)(currentTemperature[0] >> 8);
-				cBuf[sizeof(cBuf) - 1] = crcCalc(cBuf, sizeof(cBuf) - 1);
-				ets_uart_printf("CMD_GET_STATE_ANS: ");
-				for (a = 0; a < sizeof(cBuf); a++)
-						ets_uart_printf("%02x ", cBuf[a]);
-					ets_uart_printf("\r\n");
-				espconn_sent(pesp_conn, cBuf, sizeof(cBuf));
-			}
+				{
+					uint8 cBuf[8];
+					cBuf[0] = (uint8)(sizeof(cBuf) - 1);
+					cBuf[1] = (uint8)(CMD_GET_STATE_ANS);
+					cBuf[2] = time.hour;
+					cBuf[3] = time.min;
+					cBuf[4] = time.sec;
+					cBuf[5] = (uint8)(currentTemperature[0] & 0xff);
+					cBuf[6] = (uint8)(currentTemperature[0] >> 8);
+					cBuf[sizeof(cBuf) - 1] = crcCalc(cBuf, sizeof(cBuf) - 1);
+	//				ets_uart_printf("CMD_GET_STATE_ANS: ");
+	//				for (a = 0; a < sizeof(cBuf); a++)
+	//						ets_uart_printf("%02x ", cBuf[a]);
+	//					ets_uart_printf("\r\n");
+					espconn_sent(pesp_conn, cBuf, sizeof(cBuf));
+				}
 				break;
-//			case TIME_SET:
-//				break;
+
+			case CMD_GET_CFG:
+				{
+					uint8 cnt = sizeof(u_CONFIG) - sizeof(s_WIFI_CFG) + 2;
+					uint8 cBuf[cnt];
+					cBuf[0] = cnt - 1;
+					cBuf[1] =  CMD_GET_CFG_ANS;
+					for(i = 0; i < (sizeof(cBuf) - 2); i++)
+						cBuf[i + 2] = configs.byte[i];
+					cBuf[sizeof(cBuf) - 1] = crcCalc(cBuf, sizeof(cBuf) - 1);
+
+									ets_uart_printf("CMD_GET_SGF_ANS: ");
+										for (a = 0; a < sizeof(cBuf); a++)
+												ets_uart_printf("%02x ", cBuf[a]);
+											ets_uart_printf("\r\n");
+
+					espconn_sent(pesp_conn, cBuf, sizeof(cBuf));
+				}
+				break;
+
+			case CMD_SET_CFG:
+				{
+
+					for(i = 0; i < (sizeof(u_CONFIG) - sizeof(s_WIFI_CFG)); i++ )
+						configs.byte[i] = pusrdata[i + 2];
+
+					ets_uart_printf("temperature: %d\r\n", configs.temperature);
+
+					for(i = 0; i < 2; i++)
+						ets_uart_printf("light[%d]: %d:%d  %d\r\n",
+								i,
+								configs.light[i].hour,
+								configs.light[i].minute,
+								configs.light[i].light);
+					for(i = 0; i < 3; i++)
+						ets_uart_printf("periph[%d]: %d:%d  %d:%d\r\n",
+								i,
+								configs.periph[i].hStart, configs.periph[i].mStart,
+								configs.periph[i].hStop,  configs.periph[i].mStop);
+					flashWriteBit = 1;
+				}
+				break;
 //
 //			case CONF_GET:
 //				break;

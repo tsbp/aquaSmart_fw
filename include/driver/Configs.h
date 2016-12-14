@@ -13,19 +13,9 @@ typedef union __packed
     uint8 delta;
   };
 }u_NASTROYKI;
-//==============================================================================
-#define SENSOR_MODE_LOCAL			(0x00)
-#define SENSOR_MODE_REMOTE			(0x01)
 
-#define DEVICE_MODE_MASTER			(0x01)
-#define DEVICE_MODE_SLAVE			(0x00)
 //==============================================================================
-typedef struct __attribute__ ((__packed__))
-{
-	uint8 mode;
-}s_SENS_MODE;
-//==============================================================================
-typedef struct __attribute__ ((__packed__))
+typedef struct __packed
 {
 	uint8 mode;
     uint8 auth;
@@ -33,50 +23,44 @@ typedef struct __attribute__ ((__packed__))
 	uint8 SSID_PASS[64];
 }s_WIFI_CFG;
 //==============================================================================
-typedef union __attribute__ ((__packed__))
+typedef union __packed
 {
-	uint8 byte[102];
-	struct __attribute__ ((__packed__))
+	uint8 byte[3];
+	struct __packed
 	{
-		uint8 deviceMode;
-		s_SENS_MODE sensor[2];
-		uint8 swapSens;
-		s_WIFI_CFG wifi;
+		uint8 hour;
+		uint8 minute;
+		uint8 light;
 	};
-}u_HARDWARE_SETTINGS;
-//==============================================================================
-#define MAX_PERIODS_CNT     (10)
+}u_LIGHT;
 //==============================================================================
 typedef union __packed
 {
-    uint8 byte[4];
-    struct __packed
-    {
-       uint8 hStart;
-       uint8 mStart;
-       uint16 temperature;
-    };
-}s_PCONFIG;
+	uint8 byte[4];
+	struct __packed
+	{
+		uint8 hStart;
+		uint8 mStart;
+		uint8 hStop;
+		uint8 mStop;
+	};
+}u_PERIPHERIAL;
 //==============================================================================
-#define CONF_ARRAY_LENGTH (MAX_PERIODS_CNT * sizeof(s_PCONFIG))
+#define LIGHT_CNT  (2)
+#define PERIPH_CNT (3)
 //==============================================================================
 typedef union __packed
 {
-  uint8 byte[1 + CONF_ARRAY_LENGTH];
-  struct __packed
-  {
-    uint8 periodsCnt;
-    s_PCONFIG pConfig[MAX_PERIODS_CNT];
-  };
-}u_CONFIG_u;
-//==============================================================================
-typedef struct __packed
-{
-	u_CONFIG_u cfg[2];
-	u_NASTROYKI nastr;
-	u_HARDWARE_SETTINGS hwSettings;
+	  uint8 byte[sizeof(uint16) + LIGHT_CNT * sizeof(u_LIGHT) + PERIPH_CNT * sizeof(u_PERIPHERIAL) + sizeof(s_WIFI_CFG)];
+	  struct __packed
+	  {
+		uint16 temperature;
+		u_LIGHT light[2];
+		u_PERIPHERIAL periph[3];
+		s_WIFI_CFG wifi;
+	  };
 }u_CONFIG;
-//extern u_CONFIG configs;
+extern u_CONFIG configs;
 //==============================================================================
 extern u_CONFIG configs;
 extern u_CONFIG *cPtrH, *cPtrW;
@@ -93,3 +77,19 @@ void ICACHE_FLASH_ATTR showTemperature(uint8 aSwap, unsigned char *aBuf);
 void sntp_initialize(void);
 uint8 timeSync(void);
   
+
+
+
+////==============================================================================
+//typedef union __packed
+//{
+//  uint32 byte[2 + 2 * sizeof(u_LIGHT) + 3 * sizeof(u_PERIPHERIAL)];
+//  struct __packed
+//  {
+//	uint16 temperature;
+//	u_LIGHT light[2];
+//	u_PERIPHERIAL periph[3];
+//	s_WIFI_CFG wifiCfg;
+//  };
+//}u_CONFIGS;
+

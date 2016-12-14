@@ -6,7 +6,9 @@
 #define CMD_GET_STATE				(0x10)
 #define CMD_GET_STATE_ANS			(0x11)
 
-
+#define CMD_GET_CFG					(0x20)
+#define CMD_SET_CFG					(0x21)
+#define CMD_GET_CFG_ANS				(0x22)
 
 
 void ICACHE_FLASH_ATTR UDP_Init();
