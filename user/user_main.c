@@ -33,7 +33,7 @@ uint8 timeTrue = 0;
 //======================= Main code function ============================================================
 void ICACHE_FLASH_ATTR loop(os_event_t *events)
 {
-	if (flashWriteBit == 1) saveConfigs();
+	if (flashWriteBit == 1) { saveConfigs(); flashWriteBit = 0;}
 	//=========== get temperature ===================
 	getTemperature();
 //	signed int a = (tData[0][3] - '0') + (tData[0][2] - '0') * 10	+ (tData[0][1] - '0') * 100;

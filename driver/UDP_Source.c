@@ -71,7 +71,7 @@ void UDP_Recieved(void *arg, char *pusrdata, unsigned short length)
 	ets_uart_printf("\r\n");
 
 	struct espconn *pesp_conn = arg;
-	flashWriteBit = 0;
+	//flashWriteBit = 0;
 	remot_info *premot = NULL;
 
 
@@ -110,18 +110,23 @@ void UDP_Recieved(void *arg, char *pusrdata, unsigned short length)
 
 			case CMD_GET_CFG:
 				{
-					uint8 cnt = sizeof(u_CONFIG) - sizeof(s_WIFI_CFG) + 2;
+					//==== sync time =======
+					time.hour = pusrdata[2];
+					time.min = pusrdata[3];
+					time.sec = pusrdata[4];
+
+					uint8 cnt = sizeof(u_CONFIG) - sizeof(s_WIFI_CFG) + 3;
 					uint8 cBuf[cnt];
-					cBuf[0] = cnt - 1;
-					cBuf[1] =  CMD_GET_CFG_ANS;
-					for(i = 0; i < (sizeof(cBuf) - 2); i++)
+					cBuf[0] = (uint8)(sizeof(cBuf) - 1);
+					cBuf[1] = (uint8)CMD_GET_CFG_ANS;
+					for(i = 0; i < (sizeof(cBuf) - 3); i++)
 						cBuf[i + 2] = configs.byte[i];
 					cBuf[sizeof(cBuf) - 1] = crcCalc(cBuf, sizeof(cBuf) - 1);
 
-									ets_uart_printf("CMD_GET_SGF_ANS: ");
-										for (a = 0; a < sizeof(cBuf); a++)
-												ets_uart_printf("%02x ", cBuf[a]);
-											ets_uart_printf("\r\n");
+//									ets_uart_printf("CMD_GET_SGF_ANS: ");
+//										for (a = 0; a < sizeof(cBuf); a++)
+//												ets_uart_printf("%02x ", cBuf[a]);
+//											ets_uart_printf("\r\n");
 
 					espconn_sent(pesp_conn, cBuf, sizeof(cBuf));
 				}
@@ -147,6 +152,13 @@ void UDP_Recieved(void *arg, char *pusrdata, unsigned short length)
 								configs.periph[i].hStart, configs.periph[i].mStart,
 								configs.periph[i].hStop,  configs.periph[i].mStop);
 					flashWriteBit = 1;
+
+					uint8 cBuf[3];
+					cBuf[0] = 2;
+					cBuf[1] = OK_ANS;
+					cBuf[2] = crcCalc(cBuf, sizeof(cBuf) - 1);
+					espconn_sent(pesp_conn, cBuf, sizeof(cBuf));
+
 				}
 				break;
 //
