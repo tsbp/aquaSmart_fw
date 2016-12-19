@@ -12,11 +12,10 @@
 #include "driver/UDP_Source.h"
 #include "driver/gpio16.h"
 #include "driver/services.h"
+#include "driver/stepper.h"
 //============================================================================================================================
 extern int ets_uart_printf(const char *fmt, ...);
 int (*console_printf)(const char *fmt, ...) = ets_uart_printf;
-
-#define GPIO_LED_PIN 0
 
 #define LOOP_PERIOD		(1000) // in msec
 #define user_procTaskPrio        0
@@ -24,28 +23,18 @@ int (*console_printf)(const char *fmt, ...) = ets_uart_printf;
 
 static volatile os_timer_t loop_timer;
 static void  loop(os_event_t *events);
-uint8 swap = 0;
-//int cntr = 5;
-
-#define PLOT_INTERVAL   (3600)
 uint8 timeTrue = 0;
+
 
 //======================= Main code function ============================================================
 void ICACHE_FLASH_ATTR loop(os_event_t *events)
 {
-	if (flashWriteBit == 1) { saveConfigs(); flashWriteBit = 0;}
-	//=========== get temperature ===================
-	getTemperature();
-//	signed int a = (tData[0][3] - '0') + (tData[0][2] - '0') * 10	+ (tData[0][1] - '0') * 100;
-//	uint16 t = getSetTemperature();
-//	gpio_write(1, cmpTemperature (t, a));
+	if (flashWriteBit == 1) saveConfigs();
+
+	configsProcced();
+
 	if(!timeTrue && configs.wifi.mode == STATION_MODE) timeTrue = timeSync();
 	timeIncrement();
-
-//	ets_uart_printf("%d:%d:%d\r\n", time.hour, time.min, time.sec);
-//
-//	ets_uart_printf("temperature: %d\r\n", currentTemperature[0]);
-
 }
 //==============================================================================
 void ICACHE_FLASH_ATTR setup(void)
@@ -53,6 +42,8 @@ void ICACHE_FLASH_ATTR setup(void)
 	set_gpio_mode(1,GPIO_PULLUP, GPIO_OUTPUT);
 	button_init();
 	
+	hspi_init();
+
 	UDP_Init_client();
 	ds18b20_init();
 
@@ -61,6 +52,7 @@ void ICACHE_FLASH_ATTR setup(void)
 	os_timer_setfn(&loop_timer, (os_timer_func_t *) loop, NULL);
 	os_timer_arm(&loop_timer, LOOP_PERIOD, true);
 
+	stepperTimerStop();
 }
 //========================== Init function  =============================================================
 //

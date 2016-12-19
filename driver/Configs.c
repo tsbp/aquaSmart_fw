@@ -12,6 +12,7 @@
 #include "driver/services.h"
 //==============================================================================
 uint8 flashWriteBit;
+uint8 periphWord = 0x20;
 //================== SNTP ==================================================
 void sntp_initialize(void)
 {
@@ -47,7 +48,6 @@ uint8 timeSync(void)
 				return 1;
 			}
 			return 0;
-
 }
 //=============================================================================
 u_CONFIG configs = {
@@ -55,6 +55,58 @@ u_CONFIG configs = {
 		.wifi.SSID = "voodoo",
         .wifi.SSID_PASS = "eminem82"
 };
+//=============================================================================
+uint16 getMinutes(uint8 aHour, uint8 aMinute)
+{
+	return aHour * 60 + aMinute;
+}
+//=============================================================================
+#define DELTA	(2)
+//=============================================================================
+void configsProcced(void)
+{
+	int i = 0;
+	uint16 a, b, c;
+
+	c = getMinutes(time.hour, time.min);
+	//============ light ===========================
+//	ets_uart_printf("%d. mStart = %d, mEnd = %d, mCur %d\r\n", i, a, b, c);
+	a = getMinutes(configs.light[0].hour, configs.light[0].minute);
+	b = getMinutes(configs.light[1].hour, configs.light[1].minute);
+	//============ peripherial =====================
+	//periphWord = (periphWord & 40);
+	for(i = 0; i < 2; i++)
+	{
+		a = getMinutes(configs.periph[i].hStart, configs.periph[i].mStart);
+		b = getMinutes(configs.periph[i].hStop,  configs.periph[i].mStop);
+		if( a != b)
+		{
+			if(a < b)
+			{
+				if(c >= a && c < b)  periphWord |=  (1 << (i + 6));
+				else 				 periphWord &= ~(1 << (i + 6));
+			}
+			else
+			{
+				if (c >= a || c < b) periphWord |=  (1 << (i + 6));
+				else				 periphWord &= ~(1 << (i + 6));
+			}
+		}
+	}
+	//============= temperature ====================
+	getTemperature();
+	if(currentTemperature[0] <= (configs.temperature - DELTA))      periphWord |=  (1 << 5);
+	else if(currentTemperature[0] >= (configs.temperature + DELTA)) periphWord &= ~(1 << 5);
+
+	//================= stepper ====================
+	if((((time.hour * 60 + time.min) == (configs.periph[2].hStart * 60 + configs.periph[2].mStart))||
+		   ((time.hour * 60 + time.min) == (configs.periph[2].hStop  * 60 + configs.periph[2].mStop)))
+			&& time.sec == 0)
+		stepperGo();
+	//=================
+	hspi_send_uint8(periphWord);
+	hspi_wait_ready();
+}
 //=============================================================================
 void ICACHE_FLASH_ATTR saveConfigs(void) {
     flashWriteBit = 0;

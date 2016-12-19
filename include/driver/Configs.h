@@ -54,7 +54,7 @@ typedef union __packed
 	  uint8 byte[sizeof(uint16) + LIGHT_CNT * sizeof(u_LIGHT) + PERIPH_CNT * sizeof(u_PERIPHERIAL) + sizeof(s_WIFI_CFG)];
 	  struct __packed
 	  {
-		uint16 temperature;
+		sint16 temperature;
 		u_LIGHT light[2];
 		u_PERIPHERIAL periph[3];
 		s_WIFI_CFG wifi;
@@ -65,21 +65,11 @@ extern u_CONFIG configs;
 extern u_CONFIG configs;
 extern u_CONFIG *cPtrH, *cPtrW;
 extern uint8 flashWriteBit;
+extern uint8 periphWord;
 //==============================================================================
-#ifdef COLOR_LCD
-void ICACHE_FLASH_ATTR init_screen(uint8 aOrient);
-#else
-void ICACHE_FLASH_ATTR init_screen();
-#endif
-uint16 ICACHE_FLASH_ATTR getSetTemperature();
-unsigned char ICACHE_FLASH_ATTR cmpTemperature (uint16 aT, signed int arcTemper);
-void ICACHE_FLASH_ATTR showTemperature(uint8 aSwap, unsigned char *aBuf);
+void configsProcced(void);
 void sntp_initialize(void);
 uint8 timeSync(void);
-  
-
-
-
 ////==============================================================================
 //typedef union __packed
 //{
