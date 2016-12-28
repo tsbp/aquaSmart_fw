@@ -39,16 +39,18 @@ uint32 duty[1] = {DEFAULT_PWM_DUTY_STEP*(100 - 10)};
 //======================= Main code function ============================================================
 void ICACHE_FLASH_ATTR loop(os_event_t *events)
 {
-	if (flashWriteBit == 1) saveConfigs();
-
-	configsProcced();
+	timeIncrement();
 
 	if(!timeTrue &&
 			configs.wifi.mode == STATION_MODE &&
 			wifi_station_get_connect_status() == STATION_GOT_IP)
 		timeTrue = timeSync();
 
-	timeIncrement();
+	if (flashWriteBit == 1) saveConfigs();
+
+	configsProcced();
+
+
 }
 //==============================================================================
 void ICACHE_FLASH_ATTR setup(void)
