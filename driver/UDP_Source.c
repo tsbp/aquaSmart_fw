@@ -91,7 +91,7 @@ void UDP_Recieved(void *arg, char *pusrdata, unsigned short length)
 		{
 			case CMD_GET_STATE:
 				{
-					uint8 cBuf[8];
+					uint8 cBuf[9];
 					cBuf[0] = (uint8)(sizeof(cBuf) - 1);
 					cBuf[1] = (uint8)(CMD_GET_STATE_ANS);
 					cBuf[2] = time.hour;
@@ -99,6 +99,7 @@ void UDP_Recieved(void *arg, char *pusrdata, unsigned short length)
 					cBuf[4] = time.sec;
 					cBuf[5] = (uint8)(currentTemperature[0] & 0xff);
 					cBuf[6] = (uint8)(currentTemperature[0] >> 8);
+					cBuf[7] = day_night;
 					cBuf[sizeof(cBuf) - 1] = crcCalc(cBuf, sizeof(cBuf) - 1);
 	//				ets_uart_printf("CMD_GET_STATE_ANS: ");
 	//				for (a = 0; a < sizeof(cBuf); a++)
@@ -114,6 +115,7 @@ void UDP_Recieved(void *arg, char *pusrdata, unsigned short length)
 					time.hour = pusrdata[2];
 					time.min = pusrdata[3];
 					time.sec = pusrdata[4];
+					timeTrue = 1;
 
 					uint8 cnt = sizeof(u_CONFIG) - sizeof(s_WIFI_CFG) + 3;
 					uint8 cBuf[cnt];
@@ -161,9 +163,37 @@ void UDP_Recieved(void *arg, char *pusrdata, unsigned short length)
 
 				}
 				break;
-//
-//			case CONF_GET:
-//				break;
+
+			case CMD_SET_WIFI:
+				{
+					int i, j;
+					os_memset(configs.wifi.SSID, 0, sizeof(configs.wifi.SSID));
+					os_memset(configs.wifi.SSID_PASS, 0,	sizeof(configs.wifi.SSID_PASS));
+
+					for (i = 0; i < length; i++)
+					{
+						if (pusrdata[i + 2] == '$')	break;
+						else	configs.wifi.byte[i] = pusrdata[i + 2];
+					}
+
+					j = i + 3;
+
+					for (i = 0; i < length - j - 1; i++) configs.wifi.SSID_PASS[i] = pusrdata[i + j];
+
+					ets_uart_printf("configs.wifi.SSID %s\r\n", configs.wifi.SSID);
+					ets_uart_printf("configs.wifi.SSID_PASS %s\r\n", configs.wifi.SSID_PASS);
+
+
+					serviceMode = MODE_SW_RESET;
+					service_timer_start();
+					flashWriteBit = 1;
+					uint8 cBuf[3];
+					cBuf[0] = 2;
+					cBuf[1] = OK_ANS;
+					cBuf[2] = crcCalc(cBuf, sizeof(cBuf) - 1);
+					espconn_sent(pesp_conn, cBuf, sizeof(cBuf));
+				}
+				break;
 //
 //			case CONF_SET:
 //				break;

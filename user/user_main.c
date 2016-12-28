@@ -6,7 +6,6 @@
 #include "user_config.h"
 #include "user_interface.h"
 #include "driver/uart.h"
-#include "driver/plot.h"
 #include "driver/DS18B20_PR.h"
 #include "driver/Configs.h"
 #include "driver/UDP_Source.h"
@@ -23,8 +22,19 @@ int (*console_printf)(const char *fmt, ...) = ets_uart_printf;
 
 static volatile os_timer_t loop_timer;
 static void  loop(os_event_t *events);
-uint8 timeTrue = 0;
 
+
+#define PWM_0_OUT_IO_MUX PERIPHS_IO_MUX_MTDI_U
+#define PWM_0_OUT_IO_NUM 12
+#define PWM_0_OUT_IO_FUNC FUNC_GPIO12
+
+#define DEFAULT_PWM_DUTY_STEP	(80)
+
+uint32 io_info[][3] = {   {PWM_0_OUT_IO_MUX,PWM_0_OUT_IO_FUNC,PWM_0_OUT_IO_NUM},
+       	                  //{PWM_1_OUT_IO_MUX,PWM_1_OUT_IO_FUNC,PWM_1_OUT_IO_NUM},
+               	          //{PWM_2_OUT_IO_MUX,PWM_2_OUT_IO_FUNC,PWM_2_OUT_IO_NUM},
+			};
+uint32 duty[1] = {DEFAULT_PWM_DUTY_STEP*(100 - 10)};
 
 //======================= Main code function ============================================================
 void ICACHE_FLASH_ATTR loop(os_event_t *events)
@@ -33,7 +43,11 @@ void ICACHE_FLASH_ATTR loop(os_event_t *events)
 
 	configsProcced();
 
-	if(!timeTrue && configs.wifi.mode == STATION_MODE) timeTrue = timeSync();
+	if(!timeTrue &&
+			configs.wifi.mode == STATION_MODE &&
+			wifi_station_get_connect_status() == STATION_GOT_IP)
+		timeTrue = timeSync();
+
 	timeIncrement();
 }
 //==============================================================================
@@ -42,7 +56,9 @@ void ICACHE_FLASH_ATTR setup(void)
 	set_gpio_mode(1,GPIO_PULLUP, GPIO_OUTPUT);
 	button_init();
 	
-	hspi_init();
+	pwm_init(10000, duty, 1, io_info);
+    pwm_start();
+
 
 	UDP_Init_client();
 	ds18b20_init();
@@ -71,8 +87,15 @@ void ICACHE_FLASH_ATTR user_init(void)
 	wifi_station_set_auto_connect(0);
 	//system_update_cpu_freq(160);
 
-//	if(configs.hwSettings.wifi.mode == STATION_MODE) setup_wifi_st_mode();
-//	else if(configs.hwSettings.wifi.mode == SOFTAP_MODE)
+	hspi_init();
+	hspi_send_uint8(0);
+	hspi_wait_ready();
+
+	ets_uart_printf("configs.wifi.SSID %s\r\n", configs.wifi.SSID);
+	ets_uart_printf("configs.wifi.SSID_PASS %s\r\n", configs.wifi.SSID_PASS);
+
+	if(configs.wifi.mode == STATION_MODE) setup_wifi_st_mode();
+	else if(configs.wifi.mode == SOFTAP_MODE)
 		setup_wifi_ap_mode();
 
 	// Start setup timer

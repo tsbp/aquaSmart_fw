@@ -15,12 +15,16 @@ typedef union __packed
 }u_NASTROYKI;
 
 //==============================================================================
-typedef struct __packed
+typedef union __packed
 {
-	uint8 mode;
-    uint8 auth;
-	uint8 SSID[32];
-	uint8 SSID_PASS[64];
+	uint8 byte[98];
+	struct __packed
+	{
+		uint8 mode;
+		uint8 auth;
+		uint8 SSID[32];
+		uint8 SSID_PASS[64];
+	};
 }s_WIFI_CFG;
 //==============================================================================
 typedef union __packed
@@ -66,6 +70,8 @@ extern u_CONFIG configs;
 extern u_CONFIG *cPtrH, *cPtrW;
 extern uint8 flashWriteBit;
 extern uint8 periphWord;
+extern uint8 day_night;
+extern uint8 timeTrue;
 //==============================================================================
 void configsProcced(void);
 void sntp_initialize(void);

@@ -10,6 +10,8 @@
 #define CMD_SET_CFG					(0x21)
 #define CMD_GET_CFG_ANS				(0x22)
 
+#define CMD_SET_WIFI				(0x31)
+
 
 void ICACHE_FLASH_ATTR UDP_Init();
 void ICACHE_FLASH_ATTR UDP_Init_client();

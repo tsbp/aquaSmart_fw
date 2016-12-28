@@ -12,7 +12,8 @@
 #include "driver/services.h"
 //==============================================================================
 uint8 flashWriteBit;
-uint8 periphWord = 0x20;
+uint8 periphWord = 0x00;
+uint8 timeTrue = 0;
 //================== SNTP ==================================================
 void sntp_initialize(void)
 {
@@ -62,6 +63,8 @@ uint16 getMinutes(uint8 aHour, uint8 aMinute)
 }
 //=============================================================================
 #define DELTA	(2)
+uint8 currentLight = 0;
+uint8 day_night = 0;
 //=============================================================================
 void configsProcced(void)
 {
@@ -73,6 +76,21 @@ void configsProcced(void)
 //	ets_uart_printf("%d. mStart = %d, mEnd = %d, mCur %d\r\n", i, a, b, c);
 	a = getMinutes(configs.light[0].hour, configs.light[0].minute);
 	b = getMinutes(configs.light[1].hour, configs.light[1].minute);
+	if( a != b)
+	{
+		if(a < b)
+		{
+			if(c >= a && c < b)  {currentLight = configs.light[0].light; day_night = 1;}
+			else 				 {currentLight = configs.light[1].light; day_night = 0;}
+		}
+		else
+		{
+			if (c >= a || c < b) {currentLight = configs.light[0].light; day_night = 1;}
+			else				 {currentLight = configs.light[1].light; day_night = 0;}
+		}
+	}
+	pwm_set_duty(currentLight * 81, 0);
+	pwm_start();
 	//============ peripherial =====================
 	//periphWord = (periphWord & 40);
 	for(i = 0; i < 2; i++)
