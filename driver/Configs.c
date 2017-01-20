@@ -62,6 +62,26 @@ uint16 getMinutes(uint8 aHour, uint8 aMinute)
 	return aHour * 60 + aMinute;
 }
 //=============================================================================
+void checkConfigs(void)
+{
+	int i;
+	for(i = 0; i < 3; i++)
+	{
+		if(configs.periph[i].hStart > 23) configs.periph[i].hStart = 0;
+		if(configs.periph[i].hStop  > 23) configs.periph[i].hStop = 0;
+
+		if(configs.periph[i].mStart > 59) configs.periph[i].mStart = 0;
+		if(configs.periph[i].mStop  > 59) configs.periph[i].mStop = 0;
+
+	}
+
+	for(i = 0; i < 2; i++)
+	{
+		if (configs.light[i].hour   > 23) configs.light[i].hour = 0;
+		if (configs.light[i].minute > 59) configs.light[i].minute = 0;
+	}
+}
+//=============================================================================
 #define DELTA	(2)
 uint8 currentLight = 0;
 uint8 day_night = 0;
@@ -115,7 +135,7 @@ void configsProcced(void)
 	getTemperature();
 	if(currentTemperature[0] <= (configs.temperature - DELTA))      periphWord |=  (1 << 5);
 	else if(currentTemperature[0] >= (configs.temperature + DELTA)) periphWord &= ~(1 << 5);
-
+	ets_uart_printf("temp = %d\r\n", currentTemperature[0]);
 	//================= stepper ====================
 	if((((time.hour * 60 + time.min) == (configs.periph[2].hStart * 60 + configs.periph[2].mStart))||
 		   ((time.hour * 60 + time.min) == (configs.periph[2].hStop  * 60 + configs.periph[2].mStop)))

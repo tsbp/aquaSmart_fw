@@ -61,6 +61,7 @@ typedef union __packed
 		sint16 temperature;
 		u_LIGHT light[2];
 		u_PERIPHERIAL periph[3];
+		uint8 stepperTurns;
 		s_WIFI_CFG wifi;
 	  };
 }u_CONFIG;
@@ -73,6 +74,7 @@ extern uint8 periphWord;
 extern uint8 day_night;
 extern uint8 timeTrue;
 //==============================================================================
+void checkConfigs(void);
 void configsProcced(void);
 void sntp_initialize(void);
 uint8 timeSync(void);

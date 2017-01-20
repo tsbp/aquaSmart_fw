@@ -51,6 +51,7 @@ void ICACHE_FLASH_ATTR loop(os_event_t *events)
 	configsProcced();
 
 
+
 }
 //==============================================================================
 void ICACHE_FLASH_ATTR setup(void)
@@ -71,6 +72,7 @@ void ICACHE_FLASH_ATTR setup(void)
 	os_timer_arm(&loop_timer, LOOP_PERIOD, true);
 
 	stepperTimerStop();
+	stepperGo();
 }
 //========================== Init function  =============================================================
 //
@@ -83,6 +85,7 @@ void ICACHE_FLASH_ATTR user_init(void)
 
 	//saveConfigs();
 	readConfigs();
+	checkConfigs();
 	if(configs.wifi.mode == STATION_MODE) sntp_initialize();
 
 	wifi_station_disconnect();
