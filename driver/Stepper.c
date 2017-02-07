@@ -17,7 +17,7 @@ static volatile os_timer_t sMotor_timer;
 static void  sMotor_event(os_event_t *events);
 const uint8 step_fw[] = {0x12, 0x06, 0x0c, 0x18};
 const uint8 step_bw[] = {0x18, 0x0c, 0x06, 0x12};
-u_STEPPER stepper = {.stepCounter = STEP_CNT};
+u_STEPPER stepper = {.stepCounter = TURN_STEP_CNT};
 //=====================================================================
 void ICACHE_FLASH_ATTR stepperTimerStop(void)
 {
@@ -36,7 +36,7 @@ void stepperGo(void)
 	{
 		stepper.enabled = 1;
 		stepper.direction = 0;
-		stepper.stepCounter = STEP_CNT;
+		stepper.stepCounter = TURN_STEP_CNT * configs.stepperTurns;
 		stepperTimerStart();
 	}
 }
@@ -64,7 +64,7 @@ void ICACHE_FLASH_ATTR sMotor_event(os_event_t *events)
 		if(!stepper.direction)
 		{
 			stepper.direction = 1;
-			stepper.stepCounter = STEP_CNT;
+			stepper.stepCounter = TURN_STEP_CNT * configs.stepperTurns;
 		}
 		else
 		{

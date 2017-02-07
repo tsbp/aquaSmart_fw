@@ -62,6 +62,7 @@ typedef union __packed
 		u_LIGHT light[2];
 		u_PERIPHERIAL periph[3];
 		uint8 stepperTurns;
+		uint8 eatMinutes;
 		s_WIFI_CFG wifi;
 	  };
 }u_CONFIG;

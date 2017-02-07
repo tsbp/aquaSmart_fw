@@ -85,6 +85,7 @@ void checkConfigs(void)
 #define DELTA	(2)
 uint8 currentLight = 0;
 uint8 day_night = 0;
+uint16 eatSecCounter;
 //=============================================================================
 void configsProcced(void)
 {
@@ -96,7 +97,12 @@ void configsProcced(void)
 //	ets_uart_printf("%d. mStart = %d, mEnd = %d, mCur %d\r\n", i, a, b, c);
 	a = getMinutes(configs.light[0].hour, configs.light[0].minute);
 	b = getMinutes(configs.light[1].hour, configs.light[1].minute);
-	if( a != b)
+	if(eatSecCounter)
+	{
+		eatSecCounter--;
+		currentLight = configs.light[0].light;
+	}
+	else if( a != b)
 	{
 		if(a < b)
 		{
@@ -121,13 +127,13 @@ void configsProcced(void)
 		{
 			if(a < b)
 			{
-				if(c >= a && c < b)  periphWord |=  (1 << (i + 6));
-				else 				 periphWord &= ~(1 << (i + 6));
+				if((c >= a && c < b) && !eatSecCounter)  periphWord |=  (1 << (i + 6));
+				else 				                     periphWord &= ~(1 << (i + 6));
 			}
 			else
 			{
-				if (c >= a || c < b) periphWord |=  (1 << (i + 6));
-				else				 periphWord &= ~(1 << (i + 6));
+				if ((c >= a || c < b) && !eatSecCounter) periphWord |=  (1 << (i + 6));
+				else				                     periphWord &= ~(1 << (i + 6));
 			}
 		}
 	}
@@ -140,7 +146,10 @@ void configsProcced(void)
 	if((((time.hour * 60 + time.min) == (configs.periph[2].hStart * 60 + configs.periph[2].mStart))||
 		   ((time.hour * 60 + time.min) == (configs.periph[2].hStop  * 60 + configs.periph[2].mStop)))
 			&& time.sec == 0)
+	{
 		stepperGo();
+		eatSecCounter = configs.eatMinutes * 60;
+	}
 	//=================
 	hspi_send_uint8(periphWord);
 	hspi_wait_ready();

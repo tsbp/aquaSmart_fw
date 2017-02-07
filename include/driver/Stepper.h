@@ -8,7 +8,7 @@
 #ifndef INCLUDE_DRIVER_STEPPER_H_
 #define INCLUDE_DRIVER_STEPPER_H_
 
-#define STEP_CNT 500
+#define TURN_STEP_CNT 500
 typedef union __packed
 {
 	uint8 byte[6];
